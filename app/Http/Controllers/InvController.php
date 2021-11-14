@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Vendor;
 use App\Models\Invoicem;
 use App\Models\Invoiced;
+use DB;
+use PDF;
 
 class InvController extends Controller
 {
@@ -16,6 +18,12 @@ class InvController extends Controller
     public function addPage(){
         $vendors = Vendor::get();
         return view('invAdd',compact('vendors'));
+    }
+
+    public function editPage(){
+        $vendors = Vendor::get();
+        $dataInv = Invoicem::where(["invId"=>request('invId')])->first();
+        return view('invEdit',compact('vendors','dataInv'));
     }
 
     public function add()
@@ -32,7 +40,7 @@ class InvController extends Controller
     {
         $params = request()->all();
         try {
-            $dataInv = Invoiced::select('tblinvd.*','b.description','b.unitPrice','b.curCd','b.itemId')
+            $dataInv = Invoiced::select('tblinvd.*','b.description','b.unitPrice','b.curCd','b.itemId','b.itemType')
                     ->join('tblitem as b','b.itemId','tblinvd.itemId')
                     ->where($params )->get();
                     return ["error"=>false,"message"=>"Data Found","params"=>$dataInv];
@@ -41,15 +49,56 @@ class InvController extends Controller
         }
         
     }
+    public function getInvList(){
+        $params = request()->all();
+        try {
+            if(array_key_exists('invId',$params)){
+                $params['tblinvm.invId'] = $params['invId'];
+                unset($params['invId']);
+            }
+            $dataInv = Invoicem::select('tblinvm.*','b.amount','c.name as senderNm','d.name as receiverNm','c.address as senderAddr','d.address as receiverAddr')
+                    ->leftJoin(DB::raw("
+                    (
+                        select sum(a.qty * b.unitPrice)amount,invId
+                        from tblinvd a 
+                        join tblitem b on a.itemId = b.itemId
+                        group by a.invId
+                    ) as b"),'b.invId','tblinvm.invId')
+                    ->join('tblvendor as c','c.vendId','tblinvm.senderId')
+                    ->join('tblvendor as d','d.vendId','tblinvm.senderId')
+                    ->where($params )->get();
+                    return ["error"=>false,"message"=>"Data Found","params"=>$dataInv];
+        } catch (Exception $e) {
+            return ["error"=>"003","message"=>"Something Wrong ".$e];
+        }
+    }
     public function updQty()
     {
         $params =request()->all();
         return Invoiced::updateData(["qty"=>$params["qty"]],["invId"=>$params["invId"],"itemId"=>$params["itemId"]]);
     }
 
+    public function updInv()
+    {
+        $params = request()->all();
+        $invId = $params['invId'];
+        unset($params['invId']);
+        $totalAmount = Invoiced::join('tblitem as b','b.itemId','tblinvd.itemId')
+        ->where(["invId"=>$invId])->sum(DB::raw('qty*b.unitPrice'));
+        $params["invStatus"] = $params["payments"]>=$totalAmount?'PAID':'UNPAID';
+        return Invoicem::updateData($params,$invId);
+    }
+
     public function delInv()
     {
         $params = request()->all();
         return Invoiced::deleteData(["invId"=>$params["invId"],"itemId"=>$params["itemId"]]);
+    }
+
+    public function invPdf()
+    {
+        $invM = $this->getInvList()['params'];
+        $invD = $this->getList()['params'];
+        return view('invDetail',compact('invM','invD'));
     }
 }

@@ -17,5 +17,7 @@ use App\Http\Controllers\ItemController;
 
 Route::get('/',[InvController::class,'index']);
 Route::get('/inv/add',[InvController::class,'addPage']);
+Route::get('/inv/edit',[InvController::class,'editPage']);
+Route::get('/inv/detail',[InvController::class,'invPdf']);
 
 Route::get('/item/get',[ItemController::class,'getList']);

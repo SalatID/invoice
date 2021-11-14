@@ -10,6 +10,7 @@ class Invoicem extends Model
 {
     use HasFactory;
     protected $table ='tblinvm';
+    public $timestamps = false;
 
     public function generateId()
     {

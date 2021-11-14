@@ -19,6 +19,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::post('/inv/add',[InvController::class,'add']);
+Route::get('/inv/get',[InvController::class,'getInvList']);
+Route::put('/inv/update',[InvController::class,'updInv']);
 Route::post('/inv/detail/add',[InvController::class,'addDetail']);
 Route::post('/inv/get',[InvController::class,'getList']);
 Route::put('/inv/detail/qty/update',[InvController::class,'updQty']);

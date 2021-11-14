@@ -1,26 +1,40 @@
 @extends('index')
-@section('title', 'Add Invoice')
+@section('title', 'Edit Invoice')
 
 @section('content')
 
     <!-- Content Row -->
 
     <div class="row mt-2">
+        <div class="col-md-12 text-right pr-4">
+            <img src="/{{strtolower($dataInv->invStatus)}}.png" class="img-status" width="15%" style="position: inherit;margin-top:-9vh" alt="">
+        </div>
         <div class="col-md-12 table-responsive">
             <form action="">
                 @csrf
-                <div class="form-group d-none after-save">
+                <div class="form-group">
                     <label for="exampleInputEmail1">Invoice Number</label>
-                    <input type="text" class="form-control" name="invId" placeholder="Invoice Number" readonly>
+                    <input type="text" class="form-control" name="invId" placeholder="Invoice Number" value="{{$dataInv->invId??''}}" readonly>
                 </div>
                 <div class="form-group">
                     <label for="exampleInputEmail1">Subject</label>
-                    <input type="text" maxlength="150" class="form-control" name="subject" placeholder="Subject" required>
+                    <input type="text" maxlength="150" class="form-control" name="subject" placeholder="Subject" value="{{$dataInv->subject??''}}" required>
                 </div>
-                <div class="form-group">
-                    <label for="exampleInputEmail1">Due Date</label>
-                    <input type="date" class="form-control" name="dueDt" placeholder="Due Date" required>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Due Date</label>
+                            <input type="date" class="form-control" name="dueDt" placeholder="Due Date" value="{{$dataInv->dueDt??''}}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Payments</label>
+                            <input type="number" class="form-control" name="payments" placeholder="Payments" value="{{$dataInv->payments??''}}" required>
+                        </div>
+                    </div>
                 </div>
+                
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="form-group">
@@ -28,7 +42,7 @@
                             <select name="senderId" class="form-control" required>
                                 <option value="">--Select Sender--</option>
                                 @foreach ($vendors as $vendor)
-                                    <option value="{{$vendor->vendId}}">{{$vendor->name}}</option>
+                                    <option value="{{$vendor->vendId}}" {{$dataInv->senderId==$vendor->vendId?'selected':''}}>{{$vendor->name}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -39,7 +53,7 @@
                             <select name="receiverId" class="form-control" required>
                                 <option value="">--Select Receiver--</option>
                                 @foreach ($vendors as $vendor)
-                                    <option value="{{$vendor->vendId}}">{{$vendor->name}}</option>
+                                    <option value="{{$vendor->vendId}}" {{$dataInv->senderId==$vendor->vendId?'selected':''}}>{{$vendor->name}}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -50,7 +64,7 @@
         </div>
     </div>
 
-    <div class="row mt-2 d-none after-save">
+    <div class="row mt-2">
         <div class="col-md-12">
             <div class="row">
                 <div class="col-sm-3">
@@ -88,8 +102,9 @@
         </div>
     </div>
 
-    <div class="row mt-2 d-none after-save">
+    <div class="row mt-2">
         <div class="col-md-12 table-responsive">
+            
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -124,11 +139,33 @@
                     
                 </tbody>
             </table>
-            <button type="button" class="btn btn-success " onclick="location.reload()">New Invoice</button>
+            <table class="table ">
+                <tr>
+                    <td class="text-right">Sub Total</td>
+                    <td class="subtotal">0</td>
+                </tr>
+                <tr>
+                    <td class="text-right">Tax</td>
+                    <td class="tax">0</td>
+                </tr>
+                <tr>
+                    <td class="text-right">Amount</td>
+                    <td class="amounttotal">0</td>
+                </tr>
+            </table>
         </div>
     </div>
     <script>
+        $(document).ready(function(){
+            getInvDetail({
+                invId : $('input[name="invId"]').val(),
+            })
+        })
         $('.btn-save').click(function(){
+            var invIde =$('input[name="invId"]')
+            var invId = invIde.val()
+            if(invId=='') {alert('Invoice Number Not Found');invIde.focus();}
+
             var subjecte =$('input[name="subject"]')
             var subject = subjecte.val()
             if(subject=='') {alert('Please Fill the Subject');subjecte.focus();}
@@ -145,22 +182,26 @@
             var receiverId = receiverIde.val()
             if(receiverId=='') {alert('Please Choose Receiver');receiverIde.focus();}
 
+            var paymentse =$('input[name="payments"]')
+            var payments = paymentse.val()
+            if(payments=='') {alert('Please Choose Receiver');paymentse.focus();}
+
             var params ={
+                invId:invId,
                 subject :subject,
                 dueDt : dueDt,
                 senderId : senderId,
-                receiverId : receiverId
+                receiverId : receiverId,
+                payments:payments
             }
             $.ajax({
-                url : '/api/inv/add',
-                method : 'post',
+                url : '/api/inv/update',
+                method : 'put',
                 data : params,
                 success : function(d){
                     console.log(d)
                     if(!d.error){
-                        $('input[name="invId"]').val(d.params.invId)
-                        $('.btn-save').addClass('d-none')
-                        $('.after-save').removeClass('d-none')
+                        location.reload()
                     }
                 },
                 error : function(e){
@@ -168,6 +209,8 @@
                 }
             })
         })
+
+        
 
         $('.btn-add').click(function(){
             var itemIde =$('input[name="itemId"]')

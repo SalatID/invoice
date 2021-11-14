@@ -11,9 +11,9 @@ class ItemController extends Controller
     {
         $params = request()->all();
         $par = [];
-        if(array_key_exists('name',$params)){
+        if(array_key_exists('description',$params)){
             array_push($par,[
-                'name','like',$params['name'].'%'
+                'description','like',$params['description'].'%'
             ]);
         }
 
