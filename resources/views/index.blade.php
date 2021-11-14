@@ -25,7 +25,7 @@
     <script>
         function getInvDetail(params){
             $.ajax({
-                url : '/api/inv/get',
+                url : '/api/inv/detail/get',
                 method : 'post',
                 data : params,
                 success : function(d){

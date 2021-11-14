@@ -60,6 +60,7 @@
                     </div>
                 </div>
                 <a href="#" class="btn btn-success btn-save"><i class="fas fa-save"></i> Simpan</a>
+                <a tclass="btn btn-secondary " href="/">Back</a>
             </form>
         </div>
     </div>

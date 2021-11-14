@@ -22,6 +22,7 @@ Route::post('/inv/add',[InvController::class,'add']);
 Route::get('/inv/get',[InvController::class,'getInvList']);
 Route::put('/inv/update',[InvController::class,'updInv']);
 Route::post('/inv/detail/add',[InvController::class,'addDetail']);
-Route::post('/inv/get',[InvController::class,'getList']);
+Route::post('/inv/detail/get',[InvController::class,'getList']);
 Route::put('/inv/detail/qty/update',[InvController::class,'updQty']);
 Route::delete('/inv/detail/delete',[InvController::class,'delInv']);
+Route::delete('/inv/delete',[InvController::class,'delInvM']);

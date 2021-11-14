@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Invoiced;
 use Validator;
 
 class Invoicem extends Model
@@ -66,6 +67,7 @@ class Invoicem extends Model
     public static function deleteData($id)
     {
       if (self::where(['invId'=>$id])->delete()) {
+          Invoiced::where(['invId'=>$id])->delete();
         return ["error"=>false,"message"=>"Delete Invoice Successfull"];
       }
       return ["error"=>true,"message"=>"Delete Invoice Failed"];

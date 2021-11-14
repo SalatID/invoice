@@ -125,6 +125,7 @@
                 </tbody>
             </table>
             <button type="button" class="btn btn-success " onclick="location.reload()">New Invoice</button>
+            <a tclass="btn btn-secondary " href="/">Back</a>
         </div>
     </div>
     <script>

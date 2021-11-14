@@ -54,6 +54,7 @@ class InvController extends Controller
         try {
             if(array_key_exists('invId',$params)){
                 $params['tblinvm.invId'] = $params['invId'];
+                $detail = Invoiced::where(['invId'=>$params['invId']])->get();
                 unset($params['invId']);
             }
             $dataInv = Invoicem::select('tblinvm.*','b.amount','c.name as senderNm','d.name as receiverNm','c.address as senderAddr','d.address as receiverAddr')
@@ -66,7 +67,11 @@ class InvController extends Controller
                     ) as b"),'b.invId','tblinvm.invId')
                     ->join('tblvendor as c','c.vendId','tblinvm.senderId')
                     ->join('tblvendor as d','d.vendId','tblinvm.senderId')
-                    ->where($params )->get();
+                    ->where($params )->orderBy('tblinvm.invId')->get();
+                    if(count($dataInv->toArray()) ==1){
+                        $dataInv = $dataInv[0];
+                        $dataInv['detail'] = $detail;
+                    }
                     return ["error"=>false,"message"=>"Data Found","params"=>$dataInv];
         } catch (Exception $e) {
             return ["error"=>"003","message"=>"Something Wrong ".$e];
@@ -93,6 +98,12 @@ class InvController extends Controller
     {
         $params = request()->all();
         return Invoiced::deleteData(["invId"=>$params["invId"],"itemId"=>$params["itemId"]]);
+    }
+
+    public function delInvM()
+    {
+        $params = request()->all();
+        return Invoicem::deleteData(["invId"=>$params["invId"]]);
     }
 
     public function invPdf()
